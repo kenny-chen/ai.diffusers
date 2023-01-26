@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stable Diffusion</title>
+
+<script src="./resource/javascript/jquery.min.js" integrity="sha512-STof4xm1wgkfm7heWqFJVn58Hm3EtS31XFaagaa8VMReCXAkQnJZ+jEy8PCC/iT18dFy95WcExNHFTqLyp72eQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="./resource/javascript/bootstrap.min.js" integrity="sha512-eHx4nbBTkIr2i0m9SANm/cczPESd0DUEcfl84JpIuutE6oDxPhXvskMR08Wmvmfx5wUpVjlWdi82G5YLvqqJdA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="stylesheet" href="./resource/style/bootstrap.min.css" integrity="sha512-72OVeAaPeV8n3BdZj7hOkaPSEk/uwpDkaGyP4W2jSzAC8tfiO4LMEDWoL3uFp5mcZu+8Eehb4GhZWFwvrss69Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<script>
+$( document ).ready(function() {
+  var ui = {};
+  var global = {noVal: 10,};
+  
+  function initUI() {
+    ui.div1 = $('#div1');
+    ui.div2 = $('#div2');
+    ui.div3 = $('#div3');
+    ui.btn1 = $('#btn1');
+    ui.sl1 = $('#sl1');
+    ui.sl2 = $('#sl2');
+    ui.sl3 = $('#sl3');
+    ui.sl4 = $('#sl4');
+    ui.tvVal = $('.tvVal');
+    ui.tvValNegative = $('.tvValNegative');
+  }
+  initUI();
+  
+  
+  var html = '';
+  for (var i=0; i < global.noVal; i++) {
+    html += `
+      <div class="row">
+      
+      <div class="col-md-6">
+      <div class="form-floating mb-2">
+        <textarea class="form-control form-control-sm text-light bg-dark tvVal" placeholder="Leave a prompt `+(i+1)+` here" id="tv`+i+`" style="height: 100px"></textarea>
+        <label for="tv`+i+`">Prompt `+(i+1)+`</label>
+      </div>
+      </div>
+      
+      <div class="col-md-6">
+      <div class="form-floating mb-2">
+        <textarea class="form-control form-control-sm text-light bg-dark tvValNegative" placeholder="Leave a negative prompt `+(i+1)+` here" id="tvNegative`+i+`" style="height: 100px"></textarea>
+        <label for="tvNegative`+i+`">Negative Prompt `+(i+1)+`</label>
+      </div>
+      </div>
+      
+      </div>`;
+    ui.div3.html(html);
+  }
+  initUI();
+  
+  ui.btn1.click(function( event ) {
+    event.preventDefault();
+    
+    var prompt = [];
+    ui.tvVal.each(function( index ) {
+      prompt.push($(this).val());
+    });
+    
+    var promptNegative = [];
+    ui.tvValNegative.each(function( index ) {
+      promptNegative.push($(this).val());
+    });
+    
+    ui.btn1.prop('disabled', true);
+    
+    $.ajax({
+      type: "POST",
+      url: "./run-model",
+      data: {'prompt': prompt, 'promptNegative': promptNegative, 'model_id': ui.sl1.val(), 'size': ui.sl2.val(), 'no_img': ui.sl3.val(), 'step': ui.sl4.val()},
+      success: function(res) {
+        alert(JSON.stringify(res));
+      },
+      error: function(res) {
+        alert(JSON.stringify(res));
+      },
+      complete: function(res) {
+        ui.btn1.prop('disabled', false);
+      },
+      timeout: 0,
+    });
+    
+  });
+  
+  function render() {
+    $.post( "./get-images", function( datas ) {
+      var html = '';
+      for (var data of datas) {
+        var html2 = '';
+        for (var img of data['result']) {
+          html2 += `
+            <div class="col-6 col-md-2 mt-4"><img src="./outputs/`+data.label+`/`+img+`" class="img-fluid"></div>
+          `;
+        }
+        
+        html += `
+          <div class="col-12 mt-4">
+          <h6>`+data.label+`</h6>
+          `+data.prompt+`
+          <div class="row">`+html2+`</div>
+          </div>
+        `;
+      }
+      ui.div1.html(html);
+    });
+  }
+  render();
+  setInterval(render, 1000*20);
+  
+  function refreshGPU() {
+    $.post( "./get-gpu", function( datas ) {
+      var html = '';
+      for (const [k, v] of Object.entries(datas)) {
+        html += k+': '+v+'GB &nbsp &nbsp';
+      }
+      ui.div2.html(html);
+    });
+  }
+  refreshGPU();
+  setInterval(refreshGPU, 1000*5);
+});
+</script>
+
+</head>
+<body data-bs-theme="dark" class="text-body bg-body">
+
+<nav class="navbar navbar-expand-lg navbar-light">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="javascript:void(0);">Stable Diffusion RTX2060</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="javascript:void(0);">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#showreel">Showreel</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container-fluid">
+
+
+<div class="row mt-2">
+<div class="col-12">
+
+<form class="row g-3 pb-3 border border-secondary">
+
+  <div class="col-md-3">
+    <label class="form-label">Model ID</label>
+    <select id="sl1" class="form-select text-light bg-dark">
+      <option value="runwayml/stable-diffusion-v1-5" selected>runwayml/stable-diffusion-v1-5</option>
+      <option value="Linaqruf/anything-v3.0">Linaqruf/anything-v3.0</option>
+      <option value="hakurei/waifu-diffusion">hakurei/waifu-diffusion</option>
+    </select>
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">Size (px | ratio | total px)</label>
+    <select id="sl2" class="form-select text-light bg-dark">
+      <option value="11,11">704 x 704  | 1 : 1 | 495,616</option>
+      
+      <option value="12,10" selected>768 x 640  | 1.2 : 1 |  491,520</option>
+      <option value="10,12">640 x 768  | 1 : 1.2 |  491,520</option>
+      
+      <option value="14,9">896 x 576  | 1.55 : 1 |  516,096</option>
+      <option value="9,14">640 x 768  | 1 : 1.55 |  516,096</option>
+      
+      <option value="15,8">960 x 512 | 1.875 : 1 |  491,520</option>
+      <option value="8,15">512 x 960 | 1 : 1.875 |  491,520</option>
+    </select>
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">No. Image</label>
+    <select id="sl3" class="form-select text-light bg-dark">
+      <option value="5">5</option>
+      <option value="10">10</option>
+      <option value="15">15</option>
+      <option value="20" selected>20</option>
+    </select>
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">Step</label>
+    <select id="sl4" class="form-select text-light bg-dark">
+      <option value="50">50</option>
+      <option value="100" selected>100</option>
+      <option value="150">150</option>
+      <option value="200">200</option>
+      <option value="250">250</option>
+      <option value="300">300</option>
+      <option value="350">350</option>
+      <option value="400">400</option>
+      <option value="450">450</option>
+      <option value="500">500</option>
+      <option value="550">550</option>
+      <option value="600">600</option>
+      <option value="750">750</option>
+      <option value="800">800</option>
+    </select>
+  </div>
+  
+  <div id="div3" class="col-12">
+  </div>
+  
+  <div class="col-12">
+    <button id="btn1" class="btn btn-secondary">Run Model</button>
+  </div>
+  
+  <div id="div2" class="mt-3"></div>
+
+</form>
+
+</div>
+</div>
+
+
+<div class="row mt-5">
+<div class="col-12">
+
+<h1><a name="showreel">SHOWREEL</a></h1>
+<div id="div1"></div>
+
+</div>
+</div>
+
+
+</div>
+
+</body>
+</html>

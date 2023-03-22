@@ -68,24 +68,22 @@ def run_model():
             cur_time = datetime.datetime.utcnow().strftime('%Y%m%d_%H%M%S')
             path_folder = os.path.join(root, "outputs", cur_time)
             Path(path_folder).mkdir(parents=True, exist_ok=True)
-            prompt = prompts[self.num]
-            print(cur_time, f"Thread{self.num}")
-
-            with open(os.path.join(path_folder, f"{cur_time}_prompt.txt"), 'w+') as f:
-                f.write(prompt)
-
-            self.clean_cache()
-
-            if 'stable-diffusion-v1-5' in model_id:
-                pipe = StableDiffusionPipeline.from_pretrained(model_id, local_files_only=False, cache_dir=root, torch_dtype=torch.float16).to(torch_device)
-            elif 'anything-v3.0' in model_id:
-                pipe = StableDiffusionPipeline.from_pretrained(model_id, local_files_only=False, cache_dir=root, torch_dtype=torch.float16, revision="diffusers").to(torch_device)
-            elif 'waifu-diffusion' in model_id:
-                pipe = StableDiffusionPipeline.from_pretrained(model_id, local_files_only=False, cache_dir=root, torch_dtype=torch.float32).to(torch_device)
 
             prompt_negative = ""
             if prompts_negative[self.num]:
                 prompt_negative = prompts_negative[self.num]
+            prompt = prompts[self.num]
+            print(cur_time, f"Thread{self.num}")
+
+            with open(os.path.join(path_folder, f"{cur_time}_prompt.txt"), 'w+') as f:
+                f.write(f"{model_id} || {prompt} ||　{prompt_negative}")
+
+            self.clean_cache()
+
+            if 'anything-v3.0' in model_id:
+                pipe = StableDiffusionPipeline.from_pretrained(model_id, local_files_only=False, cache_dir=root, torch_dtype=torch.float16, revision="diffusers").to(torch_device)
+            else:
+                pipe = StableDiffusionPipeline.from_pretrained(model_id, local_files_only=False, cache_dir=root, torch_dtype=torch.float32).to(torch_device)
 
             for j in range(no_img):
                 image = pipe(prompt, negative_prompt=prompt_negative, num_inference_steps=step, height=img_height, width=img_width).images[0]

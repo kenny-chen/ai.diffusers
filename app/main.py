@@ -83,7 +83,7 @@ def run_model():
             if 'anything-v3.0' in model_id:
                 pipe = StableDiffusionPipeline.from_pretrained(model_id, local_files_only=False, cache_dir=root, torch_dtype=torch.float16, revision="diffusers").to(torch_device)
             else:
-                pipe = StableDiffusionPipeline.from_pretrained(model_id, local_files_only=False, cache_dir=root, torch_dtype=torch.float32).to(torch_device)
+                pipe = StableDiffusionPipeline.from_pretrained(model_id, local_files_only=False, cache_dir=root, torch_dtype=torch.float16).to(torch_device)
 
             for j in range(no_img):
                 image = pipe(prompt, negative_prompt=prompt_negative, num_inference_steps=step, height=img_height, width=img_width).images[0]

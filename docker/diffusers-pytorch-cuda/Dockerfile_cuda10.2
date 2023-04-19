@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.7.0-cudnn8-runtime-ubuntu18.04
+FROM nvidia/cuda:10.2-cudnn8-runtime-ubuntu18.04
 LABEL maintainer="Hugging Face"
 LABEL repository="diffusers"
 
@@ -32,10 +32,10 @@ ENV PATH="/opt/venv/bin:$PATH"
 # pre-install the heavy dependencies (these can later be overridden by the deps from setup.py)
 RUN python3 -m pip install --no-cache-dir --upgrade pip && \
     python3 -m pip install --no-cache-dir \
-        torch==1.13.0+cu117 \
-        torchvision==0.14.0+cu117 \
-        torchaudio==0.13.0 \
-        --extra-index-url https://download.pytorch.org/whl/cu117 && \
+        torch==1.10.1+cu102 \
+        torchvision==0.11.2+cu102 \
+        torchaudio==0.10.1 \
+        -f https://download.pytorch.org/whl/cu102/torch_stable.html && \
     python3 -m pip install --no-cache-dir \
         accelerate \
         datasets \
@@ -46,9 +46,10 @@ RUN python3 -m pip install --no-cache-dir --upgrade pip && \
         modelcards \
         numpy \
         scipy \
+        tensorflow-gpu==2.3.0 \
         tensorboard \
         transformers \
-        flask \
-        protobuf==3.20.3
+        jupyterlab \
+        flask
 
 CMD ["/bin/bash"]

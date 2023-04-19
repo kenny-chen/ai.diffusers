@@ -23,6 +23,7 @@ $( document ).ready(function() {
     ui.sl2 = $('#sl2');
     ui.sl3 = $('#sl3');
     ui.sl4 = $('#sl4');
+    ui.sl5 = $('#sl5');
     ui.tvVal = $('.tvVal');
     ui.tvValNegative = $('.tvValNegative');
   }
@@ -71,7 +72,7 @@ $( document ).ready(function() {
     $.ajax({
       type: "POST",
       url: "./run-model",
-      data: {'prompt': prompt, 'promptNegative': promptNegative, 'model_id': ui.sl1.val(), 'size': ui.sl2.val(), 'no_img': ui.sl3.val(), 'step': ui.sl4.val()},
+      data: {'prompt': prompt, 'promptNegative': promptNegative, 'model_id': ui.sl1.val(), 'size': ui.sl2.val(), 'no_img': ui.sl3.val(), 'step': ui.sl4.val(), 'mode': ui.sl5.val()},
       success: function(res) {
         alert(JSON.stringify(res));
       },
@@ -109,7 +110,7 @@ $( document ).ready(function() {
     });
   }
   render();
-  setInterval(render, 1000*20);
+  setInterval(render, 1000*60);
   
   function refreshGPU() {
     $.post( "./get-gpu", function( datas ) {
@@ -155,21 +156,27 @@ $( document ).ready(function() {
 
 <form class="row g-3 pb-3 border border-secondary">
 
-  <div class="col-md-3">
+  <div class="col-md-2">
     <label class="form-label">Model ID</label>
     <select id="sl1" class="form-select text-light bg-dark">
       <option value="runwayml/stable-diffusion-v1-5" selected>runwayml/stable-diffusion-v1-5</option>
+      <option value="gsdf/Counterfeit-V2.5">gsdf/Counterfeit-V2.5</option>
       <option value="andite/anything-v4.0">andite/anything-v4.0</option>
       <option value="Lykon/DreamShaper">Lykon/DreamShaper</option>
       <option value="wavymulder/portraitplus">wavymulder/portraitplus</option>
       <option value="dreamlike-art/dreamlike-photoreal-2.0">dreamlike-art/dreamlike-photoreal-2.0</option>
       <option value="Linaqruf/anything-v3.0">Linaqruf/anything-v3.0</option>
       <option value="hakurei/waifu-diffusion">hakurei/waifu-diffusion</option>
+      <option value="ogkalu/Comic-Diffusion">ogkalu/Comic-Diffusion</option>
+      <option value="Envvi/Inkpunk-Diffusion">Envvi/Inkpunk-Diffusion</option>
     </select>
   </div>
-  <div class="col-md-3">
+  <div class="col-md-2">
     <label class="form-label">Size (px | ratio | total px)</label>
     <select id="sl2" class="form-select text-light bg-dark">
+      <option value="6,6">384 x 384  | 1 : 1 | 147,456</option>
+      <option value="8,8">512 x 512  | 1 : 1 | 262,144</option>
+      <option value="10,10">640 x 640  | 1 : 1 | 409,600</option>
       <option value="11,11">704 x 704  | 1 : 1 | 495,616</option>
       
       <option value="12,10" selected>768 x 640  | 1.2 : 1 |  491,520</option>
@@ -182,7 +189,7 @@ $( document ).ready(function() {
       <option value="8,15">512 x 960 | 1 : 1.875 |  491,520</option>
     </select>
   </div>
-  <div class="col-md-3">
+  <div class="col-md-2">
     <label class="form-label">No. Image</label>
     <select id="sl3" class="form-select text-light bg-dark">
       <option value="5">5</option>
@@ -191,9 +198,10 @@ $( document ).ready(function() {
       <option value="20" selected>20</option>
     </select>
   </div>
-  <div class="col-md-3">
+  <div class="col-md-2">
     <label class="form-label">Step</label>
     <select id="sl4" class="form-select text-light bg-dark">
+      <option value="50">25</option>
       <option value="50">50</option>
       <option value="100" selected>100</option>
       <option value="150">150</option>
@@ -208,6 +216,13 @@ $( document ).ready(function() {
       <option value="600">600</option>
       <option value="750">750</option>
       <option value="800">800</option>
+    </select>
+  </div>
+  <div class="col-md-2">
+    <label class="form-label">Mode</label>
+    <select id="sl5" class="form-select text-light bg-dark">
+      <option value="normal" selected>Normal</option>
+      <option value="shot_frame_all">Shot & Frame</option>
     </select>
   </div>
   

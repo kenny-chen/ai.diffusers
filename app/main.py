@@ -1,4 +1,5 @@
 import os
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:64"
 import json
 import datetime
 import torch
@@ -47,12 +48,22 @@ def run_model():
     no_img = int(request.form.get('no_img'))
     step = int(request.form.get('step'))
     size = request.form.get('size').split(",")
+    mode = request.form.get('mode')
     img_width, img_height = int(size[0])*size_base , int(size[1])*size_base
 
     class MyThread(threading.Thread):
-        def __init__(self, num):
+        def __init__(self, num, prompts, prompts_negative, model_id, no_img, step, size, mode, img_width, img_height):
             threading.Thread.__init__(self)
             self.num = num
+            self.prompts = prompts
+            self.prompts_negative = prompts_negative
+            self.model_id = model_id
+            self.no_img = no_img
+            self.step = step
+            self.size = size
+            self.mode = mode
+            self.img_width = img_width
+            self.img_height = img_height
 
         def clean_cache(self):
             if torch.cuda.is_available():
@@ -68,6 +79,8 @@ def run_model():
             cur_time = datetime.datetime.utcnow().strftime('%Y%m%d_%H%M%S')
             path_folder = os.path.join(root, "outputs", cur_time)
             Path(path_folder).mkdir(parents=True, exist_ok=True)
+            
+            prompts, prompts_negative, model_id, no_img, step, size, mode, img_width, img_height = self.prompts, self.prompts_negative , self.model_id, self.no_img, self.step, self.size, self.mode, self.img_width, self.img_height
 
             prompt_negative = ""
             if prompts_negative[self.num]:
@@ -85,27 +98,50 @@ def run_model():
             else:
                 pipe = StableDiffusionPipeline.from_pretrained(model_id, local_files_only=False, cache_dir=root, torch_dtype=torch.float16).to(torch_device)
 
-            for j in range(no_img):
-                image = pipe(prompt, negative_prompt=prompt_negative, num_inference_steps=step, height=img_height, width=img_width).images[0]
-                image.save(os.path.join(path_folder, f"{cur_time}_{j}.png"))
-                images.append(image)
+            if mode == 'normal':
+                for j in range(no_img):
+                    image = pipe(prompt, negative_prompt=prompt_negative, num_inference_steps=step, height=img_height, width=img_width).images[0]
+                    image.save(os.path.join(path_folder, f"{cur_time}_{j}.png"))
+                    images.append(image)
 
-            if no_img == 20:
-                rows = 4
-            elif no_img == 15:
-                rows = 3
-            elif no_img == 10:
-                rows = 2
-            elif no_img == 5:
-                rows = 1
+                if no_img == 20:
+                    rows = 4
+                elif no_img == 15:
+                    rows = 3
+                elif no_img == 10:
+                    rows = 2
+                elif no_img == 5:
+                    rows = 1
 
-            grid1 = image_grid(images, rows=rows, cols=5)
-            grid2 = image_grid(images, rows=5, cols=rows)
-            grid1.save(os.path.join(path_folder, f"{cur_time}_showcase_horizontal.png"))
-            grid2.save(os.path.join(path_folder, f"{cur_time}_showcase_vertical.png"))
+                grid1 = image_grid(images, rows=rows, cols=5)
+                grid2 = image_grid(images, rows=5, cols=rows)
+                grid1.save(os.path.join(path_folder, f"{cur_time}_showcase_horizontal.png"))
+                grid2.save(os.path.join(path_folder, f"{cur_time}_showcase_vertical.png"))
 
-            grid1.save(os.path.join(root, "outputs_horizontal", f"{cur_time}_showcase_horizontal.png"))
-            grid2.save(os.path.join(root, "outputs_vertical", f"{cur_time}_showcase_vertical.png"))
+                grid1.save(os.path.join(root, "outputs_horizontal", f"{cur_time}_showcase_horizontal.png"))
+                grid2.save(os.path.join(root, "outputs_vertical", f"{cur_time}_showcase_vertical.png"))
+
+            elif mode == 'shot_frame_all':
+                no_img = 6
+                shots = ['extreme wide shot', 'wide shot', 'medium shot', 'close up shot', 'close up shot', 'extreme close-up shot']
+                angles = ['high angle shot', 'POV shot', 'shoulder level shot', 'knee level shot', 'low angle shot', 'dutch angle shot']
+
+                for shot in shots:
+                    for angle in angles:
+                        for j in range(no_img):
+                            prompt = prompt + f", (({shot}:2)), (({angle}:2))"
+                            image = pipe(prompt, negative_prompt=prompt_negative, num_inference_steps=step, height=img_height, width=img_width).images[0]
+                            image.save(os.path.join(path_folder, f"{cur_time}_{shot}_{angle}_{j}.png".replace(" ", "_")))
+                            images.append(image)
+
+                grid1 = image_grid(images, rows=len(shots)+len(angles), cols=no_img)
+                grid2 = image_grid(images, rows=no_img, cols=len(shots)+len(angles))
+                grid1.save(os.path.join(path_folder, f"{cur_time}_showcase_horizontal.png"))
+                grid2.save(os.path.join(path_folder, f"{cur_time}_showcase_vertical.png"))
+
+                grid1.save(os.path.join(root, "outputs_horizontal", f"{cur_time}_showcase_horizontal.png"))
+                grid2.save(os.path.join(root, "outputs_vertical", f"{cur_time}_showcase_vertical.png"))
+
 
             self.clean_cache()
             time.sleep(30)
@@ -114,7 +150,7 @@ def run_model():
     threads = []
     for i in range(len(prompts)):
         if prompts[i]:
-            threads.append(MyThread(i))
+            threads.append(MyThread(i, prompts, prompts_negative, model_id, no_img, step, size, mode, img_width, img_height))
             threads[i].start()
 
     data1 = {'status': 'success'}

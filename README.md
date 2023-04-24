@@ -23,7 +23,7 @@ sudo docker run --name diffusers.002 --rm --gpus all -t -v ~/PycharmProjects/dif
 ```
 
 4. Go to index
-![screenshot](https://raw.githubusercontent.com/kenny-chen/ai.diffusers/main/screenshot/screenshot_20230424_a "screenshot")
+![screenshot](https://raw.githubusercontent.com/kenny-chen/ai.diffusers/main/screenshot/screenshot_20230424_a.png "screenshot")
 Go 127.0.0.1:82
 
 

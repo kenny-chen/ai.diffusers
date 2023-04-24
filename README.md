@@ -1,6 +1,6 @@
 # ai.diffusers
 
-Only support CUDA10.1
+support CUDA10.1 & CUDA11.7
 
 1. Download project
 ```
@@ -23,19 +23,21 @@ sudo docker run --name diffusers.002 --rm --gpus all -t -v ~/PycharmProjects/dif
 ```
 
 4. Go to index
-![screenshot](https://raw.githubusercontent.com/kenny-chen/ai.diffusers/main/screenshot/screenshot_20230126_a.png "screenshot")
+![screenshot](https://raw.githubusercontent.com/kenny-chen/ai.diffusers/main/screenshot/screenshot_20230424_a "screenshot")
 Go 127.0.0.1:82
 
 
 ### Setting params
 |Params|Description|
 | :------------ | :------------ |
-|Model ID|runwayml/stable-diffusion-v1-5<br />Linaqruf/anything-v3.0<br />hakurei/waifu-diffusion|
+|Model ID|runwayml/stable-diffusion-v1-5<br />gsdf/Counterfeit-V2.5<br />andite/anything-v4.0<br />Lykon/DreamShaper<br />wavymulder/portraitplus<br />dreamlike-art/dreamlike-photoreal-2.0<br />Linaqruf/anything-v3.0<br />hakurei/waifu-diffusion<br />ogkalu/Comic-Diffusion<br />Envvi/Inkpunk-Diffusion<br />|
 |Size (px / ratio / total px)|size / width height ratio / total pixel|
 |No. Image|how many images will be generated of each time|
 |Step|model step|
+|Mode|**normal**: no specific prompt<br /> **shot & frame**: <br /> a. shots: extreme wide shot, wide shot, medium shot, close up shot, close up shot, extreme close-up shot <br /> b. angles: high angle shot, POV shot, shoulder level shot, knee level shot, low angle shot, dutch angle shot|
 |Prompt|txt2img|
 |Negative Prompt|txt2img|
 
 ### Install guideline
-[Detailed install guideline(cnblogs)](https://www.cnblogs.com/chenkuang/p/17048888.html "Detailed install guideline")
+[Detailed install guideline (cnblogs)](https://www.cnblogs.com/chenkuang/p/17048888.html "Detailed install guideline")
+[Detailed Upgrade CUDA (cnblogs)](https://www.cnblogs.com/chenkuang/p/17333447.html "Detailed upgrade guideline")
